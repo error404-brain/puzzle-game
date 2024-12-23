@@ -48,8 +48,7 @@ namespace App1
 
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
-            InitializePieces();
-            RenderPuzzle();
+           
         }
 
         private void ShufflePieces()
@@ -113,8 +112,22 @@ namespace App1
             {
                 SwapPieces(clickedIndex);
                 RenderPuzzle();
+                if (CheckWin())
+                {
+                    ContentDialog winDialog = new ContentDialog
+                    {
+                        Title = "Congratulations!",
+                        Content = "Duma mày đã hoàn thành game!",
+                        CloseButtonText = "OK"
+                    };
+                    winDialog.XamlRoot = this.Content.XamlRoot;
+                    await winDialog.ShowAsync();
+                }
             }
         }
+
+
+
 
 
         private bool IsAdjacent(int index)
