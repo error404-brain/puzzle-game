@@ -16,16 +16,26 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="10">
-            <Button x:Name="startButton" Click="StartButton_Click">Start</Button>
-            <Button x:Name="resetButton" Click="ResetButton_Click">Reset</Button>
+        <Grid Grid.Row="0" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-        </StackPanel>
+            <TextBlock x:Name="TimerTextBlock" Text="Thời gian" FontSize="20" Margin="10" Grid.Column="0" />
 
-        <Grid Grid.Row="1" x:Name="PuzzleGrid" Background="LightGray">
+            <Button x:Name="startButton" Click="StartButton_Click" Content="Start" Grid.Column="1" Margin="5" />
 
+            <Button x:Name="resetButton" Click="ResetButton_Click" Content="Reset" Grid.Column="2" Margin="5" />
+
+            <TextBlock x:Name="totalPoint" Text="Point: 0" FontSize="20" Margin="10" HorizontalAlignment="Left" Grid.Column="3" />
         </Grid>
 
+        <Grid Grid.Row="1" x:Name="PuzzleGrid" Background="LightGray">
+        </Grid>
     </Grid>
+
 
 </Window>

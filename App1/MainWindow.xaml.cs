@@ -8,54 +8,68 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
+using Controller;
+
 
 namespace App1
 {
     public sealed partial class MainWindow : Window
     {
-        private List<Piece> pieces;
-        private int emptyIndex;
-
+        private readonly GameController gameController;
+        private DispatcherTimer timer;
         public MainWindow()
         {
             this.InitializeComponent();
-            this.InitializePieces();
-        }
-
-        private void InitializePieces()
-        {
-            pieces = new List<Piece>
+            gameController = new GameController();
+            timer = new DispatcherTimer
             {
-                new Piece("0_0", "G:\\steamIO\\App1\\App1\\Assets\\piece_0_0.png"),
-                new Piece("0_1", "G:\\steamIO\\App1\\App1\\Assets\\piece_0_1.png"),
-                new Piece("0_2", "G:\\steamIO\\App1\\App1\\Assets\\piece_0_2.png"),
-                new Piece("1_0", "G:\\steamIO\\App1\\App1\\Assets\\piece_1_0.png"),
-                new Piece("1_1", "G:\\steamIO\\App1\\App1\\Assets\\piece_1_1.png"),
-                new Piece("1_2", "G:\\steamIO\\App1\\App1\\Assets\\piece_1_2.png"),
-                new Piece("2_0", "G:\\steamIO\\App1\\App1\\Assets\\piece_2_0.png"),
-                new Piece("2_1", "G:\\steamIO\\App1\\App1\\Assets\\piece_2_1.png"),
-                new Piece("2_2", "G:\\steamIO\\App1\\App1\\Assets\\piece_2_2.png"),
+                Interval = TimeSpan.FromSeconds(1)
             };
+            timer.Tick += Timer_Tick;
 
-            emptyIndex = 8;
         }
+
+        private void Timer_Tick(object sender, object e)
+        {
+            gameController.DecrementTime();
+            UpdateTimerUI();
+
+            if (gameController.IsTimeUp())
+            {
+                timer.Stop();
+                ShowFailureDialog();
+            }
+        }
+
+        private async void ShowFailureDialog()
+        {
+            ContentDialog failureDialog = new ContentDialog
+            {
+                Title = "Time's Up!",
+                Content = "Bạn đã hết thời gian. Thử lại nhé!",
+                CloseButtonText = "OK",
+                XamlRoot = this.Content.XamlRoot
+            };
+            await failureDialog.ShowAsync();
+        }
+
+        private void UpdateTimerUI()
+        {
+            TimerTextBlock.Text = gameController.CountdownTime.ToString(@"mm\:ss");
+        }
+
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            ShufflePieces();
+            gameController.ShufflePieces();
             RenderPuzzle();
+            timer.Start();
         }
 
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
            
         }
-
-        private void ShufflePieces()
-        {
-            pieces = pieces.OrderBy(x => Guid.NewGuid()).ToList();
-        }
-
         private void RenderPuzzle()
         {
             PuzzleGrid.Children.Clear();
@@ -64,23 +78,26 @@ namespace App1
 
             for (int i = 0; i < 3; i++)
             {
-                var rowDef = new RowDefinition { Height = new Microsoft.UI.Xaml.GridLength(1, Microsoft.UI.Xaml.GridUnitType.Star) };
-                var colDef = new ColumnDefinition { Width = new Microsoft.UI.Xaml.GridLength(1, Microsoft.UI.Xaml.GridUnitType.Star) };
-
-                PuzzleGrid.RowDefinitions.Add(rowDef);
-                PuzzleGrid.ColumnDefinitions.Add(colDef);
+                PuzzleGrid.RowDefinitions.Add(new RowDefinition());
+                PuzzleGrid.ColumnDefinitions.Add(new ColumnDefinition());
             }
 
-            for (int i = 0; i < pieces.Count; i++)
+            for (int i = 0; i < gameController.Pieces.Count; i++)
             {
                 Button button = new Button
                 {
                     Tag = i,
-                    Content = (i == emptyIndex) ? null : new Image { Source = new BitmapImage(new Uri(pieces[i].ImagePath, UriKind.Relative)), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch },
+                    Content = (i == gameController.EmptyIndex) ? null : new Image
+                    {
+                        Source = new BitmapImage(new Uri(gameController.Pieces[i].ImagePath, UriKind.Relative)),
+                        HorizontalAlignment = HorizontalAlignment.Stretch,
+                        VerticalAlignment = VerticalAlignment.Stretch
+                    },
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Stretch,
-                    Margin = new Microsoft.UI.Xaml.Thickness(5) 
+                    Margin = new Thickness(5)
                 };
+
                 button.Click += Piece_Click;
                 Grid.SetRow(button, i / 3);
                 Grid.SetColumn(button, i % 3);
@@ -88,61 +105,38 @@ namespace App1
             }
         }
 
-
-        private bool CheckWin()
+        private void UpdateTotalPointUI()
         {
-            for (int i = 0; i < pieces.Count; i++)
-            {
-                string expectedName = $"{i / 3}_{i % 3}";
-                if (pieces[i].Name != expectedName)
-                {
-                    return false;
-                }
-            }
-            return true;
+            totalPoint.Text = $"Point: {gameController.totalPoint}";
         }
-
 
         private async void Piece_Click(object sender, RoutedEventArgs e)
         {
             Button clickedButton = sender as Button;
             int clickedIndex = (int)clickedButton.Tag;
 
-            if (IsAdjacent(clickedIndex))
+            if (gameController.IsAdjacent(clickedIndex))
             {
-                SwapPieces(clickedIndex);
+                gameController.SwapPieces(clickedIndex);
                 RenderPuzzle();
-                if (CheckWin())
+
+                if (gameController.CheckWin())
                 {
+                    timer.Stop(); 
+                    gameController.AddPoints(10); 
+                    UpdateTotalPointUI();
+
                     ContentDialog winDialog = new ContentDialog
                     {
                         Title = "Congratulations!",
-                        Content = "Duma mày đã hoàn thành game!",
-                        CloseButtonText = "OK"
+                        Content = $"Bạn đã hoàn thành trò chơi! Điểm của bạn: {gameController.totalPoint}",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.Content.XamlRoot
                     };
-                    winDialog.XamlRoot = this.Content.XamlRoot;
                     await winDialog.ShowAsync();
                 }
             }
         }
 
-
-
-
-
-        private bool IsAdjacent(int index)
-        {
-            return (index == emptyIndex - 1 && index % 3 != 2) ||
-                   (index == emptyIndex + 1 && index % 3 != 0) ||
-                   (index == emptyIndex - 3 || index == emptyIndex + 3);
-        }
-
-        private void SwapPieces(int index)
-        {
-            var temp = pieces[index];
-            pieces[index] = pieces[emptyIndex];
-            pieces[emptyIndex] = temp;
-            emptyIndex = index;
-        }
     }
 }
