@@ -11,34 +11,77 @@ namespace Controller
     {
         public List<Piece> Pieces { get; private set; }
         public int EmptyIndex { get; private set; }
-
         public TimeSpan CountdownTime { get; private set; }
-
-        public int totalPoint { get; private set; }
+        public int TotalPoint { get; private set; }
+        public int CurrentLevel { get; private set; }
+        private List<string[]> LevelImages { get; set; }
 
         public GameController()
         {
-            InitializePieces();
-            totalPoint = 0;
+            InitializeLevels();
+            CurrentLevel = 0; 
+            InitializePieces(); 
+            TotalPoint = 0; 
         }
+
+      
+        private void InitializeLevels()
+        {
+            LevelImages = new List<string[]>
+            {
+                new string[]
+                {
+                    "G:\\steamIO\\App1\\App1\\Assets\\piece_0_0.png",
+                    "G:\\steamIO\\App1\\App1\\Assets\\piece_0_1.png",
+                    "G:\\steamIO\\App1\\App1\\Assets\\piece_0_2.png",
+                    "G:\\steamIO\\App1\\App1\\Assets\\piece_1_0.png",
+                    "G:\\steamIO\\App1\\App1\\Assets\\piece_1_1.png",
+                    "G:\\steamIO\\App1\\App1\\Assets\\piece_1_2.png",
+                    "G:\\steamIO\\App1\\App1\\Assets\\piece_2_0.png",
+                    "G:\\steamIO\\App1\\App1\\Assets\\piece_2_1.png",
+                    "G:\\steamIO\\App1\\App1\\Assets\\piece_2_2.png"
+                },
+                //new string[]
+                //{
+                //    "G:\\steamIO\\App1\\App1\\Assets\\cropped_part_1.jpg",
+                //    "G:\\steamIO\\App1\\App1\\Assets\\cropped_part_2.jpg",
+                //    "G:\\steamIO\\App1\\App1\\Assets\\cropped_part_3.jpg",
+                //    "G:\\steamIO\\App1\\App1\\Assets\\cropped_part_4.jpg",
+                //    "G:\\steamIO\\App1\\App1\\Assets\\cropped_part_5.jpg",
+                //    "G:\\steamIO\\App1\\App1\\Assets\\cropped_part_6.jpg",
+                //    "G:\\steamIO\\App1\\App1\\Assets\\cropped_part_7.jpg",
+                //    "G:\\steamIO\\App1\\App1\\Assets\\cropped_part_8.jpg",
+                //    "G:\\steamIO\\App1\\App1\\Assets\\cropped_part_9.jpg"
+                //}
+                // Thêm nhiều màn chơi hơn ở đây
+            };
+        }
+
 
         public void InitializePieces()
         {
-            Pieces = new List<Piece>
+            Pieces = new List<Piece>();
+            var images = LevelImages[CurrentLevel];
+
+            for (int i = 0; i < images.Length; i++)
             {
-                new Piece("0_0", "G:\\steamIO\\App1\\App1\\Assets\\piece_0_0.png"),
-                new Piece("0_1", "G:\\steamIO\\App1\\App1\\Assets\\piece_0_1.png"),
-                new Piece("0_2", "G:\\steamIO\\App1\\App1\\Assets\\piece_0_2.png"),
-                new Piece("1_0", "G:\\steamIO\\App1\\App1\\Assets\\piece_1_0.png"),
-                new Piece("1_1", "G:\\steamIO\\App1\\App1\\Assets\\piece_1_1.png"),
-                new Piece("1_2", "G:\\steamIO\\App1\\App1\\Assets\\piece_1_2.png"),
-                new Piece("2_0", "G:\\steamIO\\App1\\App1\\Assets\\piece_2_0.png"),
-                new Piece("2_1", "G:\\steamIO\\App1\\App1\\Assets\\piece_2_1.png"),
-                new Piece("2_2", "G:\\steamIO\\App1\\App1\\Assets\\piece_2_2.png"),
-            };
+                Pieces.Add(new Piece($"{i / 3}_{i % 3}", images[i]));
+            }
 
             EmptyIndex = 8;
-            CountdownTime = TimeSpan.FromMinutes(1);
+            CountdownTime = TimeSpan.FromMinutes(3);
+        }
+
+
+        public bool NextLevel()
+        {
+            if (CurrentLevel < LevelImages.Count - 1)
+            {
+                CurrentLevel++;
+                InitializePieces();
+                return true;
+            }
+            return false;
         }
 
         public void DecrementTime()
@@ -73,7 +116,7 @@ namespace Controller
 
         public void AddPoints(int points)
         {
-            totalPoint += points;
+            TotalPoint += points;
         }
 
         public bool CheckWin()
@@ -90,4 +133,6 @@ namespace Controller
         }
     }
 }
+
+
 
