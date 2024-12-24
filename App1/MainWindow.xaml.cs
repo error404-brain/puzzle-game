@@ -11,6 +11,7 @@ using Windows.UI.Xaml;
 using Controller;
 
 
+
 namespace App1
 {
     public sealed partial class MainWindow : Window
@@ -66,13 +67,44 @@ namespace App1
             timer.Start();
         }
 
-        private void nextLevelButton_Click(object sender, RoutedEventArgs e)
+        private async void nextLevelButton_Click(object sender, RoutedEventArgs e)
         {
-
+            if (gameController.CheckWin())
+            {
+                if (gameController.NextLevel())
+                {
+                    RenderPuzzle(); 
+                    timer.Start(); 
+                    UpdateTotalPointUI(); 
+                }
+                else
+                {
+                    ContentDialog finishedDialog = new ContentDialog
+                    {
+                        Title = "All Levels Complete!",
+                        Content = $"Bạn đã hoàn thành tất cả các màn chơi! Tổng điểm của bạn: {gameController.TotalPoint}",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.Content.XamlRoot
+                    };
+                    await finishedDialog.ShowAsync();
+                }
+            }
+            else
+            {
+                ContentDialog notCompletedDialog = new ContentDialog
+                {
+                    Title = "Level Not Completed",
+                    Content = "Hãy hoàn thành màn chơi hiện tại trước khi chuyển sang màn tiếp theo!",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.Content.XamlRoot
+                };
+                await notCompletedDialog.ShowAsync();
+            }
         }
-
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
+            gameController.InitializePieces(); 
+            RenderPuzzle();
            
         }
         private void RenderPuzzle()
@@ -112,7 +144,7 @@ namespace App1
 
         private void UpdateTotalPointUI()
         {
-            totalPoint.Text = $"Point: {gameController.totalPoint}";
+            totalPoint.Text = $"Point: {gameController.TotalPoint}";
         }
 
         private async void Piece_Click(object sender, RoutedEventArgs e)
@@ -127,14 +159,17 @@ namespace App1
 
                 if (gameController.CheckWin())
                 {
-                    timer.Stop(); 
-                    gameController.AddPoints(10); 
+                    timer.Stop();
+                    gameController.AddPoints(10);
                     UpdateTotalPointUI();
+
+                    // Hiện nút Next Level
+                    nextLevelButton.Visibility = Visibility.Visible;
 
                     ContentDialog winDialog = new ContentDialog
                     {
                         Title = "Congratulations!",
-                        Content = $"Bạn đã hoàn thành trò chơi! Điểm của bạn: {gameController.totalPoint}",
+                        Content = $"Bạn đã hoàn thành màn chơi! Điểm của bạn: {gameController.TotalPoint}",
                         CloseButtonText = "OK",
                         XamlRoot = this.Content.XamlRoot
                     };
@@ -142,6 +177,5 @@ namespace App1
                 }
             }
         }
-
     }
 }

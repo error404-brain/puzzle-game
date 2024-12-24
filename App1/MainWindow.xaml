@@ -30,8 +30,6 @@
 
             <Button x:Name="resetButton" Click="ResetButton_Click" Content="Reset" Grid.Column="2" Margin="5" />
             
-            
-
             <TextBlock x:Name="totalPoint" Text="Point: 0" FontSize="20" Margin="10" HorizontalAlignment="Left" Grid.Column="4" />
         </Grid>
 
