@@ -66,6 +66,11 @@ namespace App1
             timer.Start();
         }
 
+        private void nextLevelButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
            
